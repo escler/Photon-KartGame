@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2734435440127140001}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: View
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -47,7 +47,8 @@ GameObject:
   - component: {fileID: 8343976533472122909}
   - component: {fileID: 5750422002150776483}
   - component: {fileID: 3519511876968373245}
-  m_Layer: 0
+  - component: {fileID: 5891366721797524573}
+  m_Layer: 6
   m_Name: Kart
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -184,11 +185,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92706dee50322b64cbb25bd2de962232, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxSpeed: 10
-  _acceleration: 0.5
-  _deceleration: 1
-  _reverseMaxSpeed: 5
-  _spin: 60
+  maxSpeed: 20
+  acceleration: 5
+  deceleration: 1
+  steer: 100
+  reverserMaxSpeed: 10
+  turboMaxSpeed: 40
+  turboAcceleration: 5
+  turboDiscountPerSecond: 10
+--- !u!114 &5891366721797524573
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6191582452334268596}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62320b14d00e70a49ae600ad1a5c1b4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &8786138939341494
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -237,9 +253,33 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7948660828100032839, guid: 3ca3bb6f1331e564c990887e83f7e4f6, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -4819223349682164798, guid: 3ca3bb6f1331e564c990887e83f7e4f6, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -3664811705211809293, guid: 3ca3bb6f1331e564c990887e83f7e4f6, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 3ca3bb6f1331e564c990887e83f7e4f6, type: 3}
       propertyPath: m_Name
       value: race
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 3ca3bb6f1331e564c990887e83f7e4f6, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2397621468118695034, guid: 3ca3bb6f1331e564c990887e83f7e4f6, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 7752030738778784939, guid: 3ca3bb6f1331e564c990887e83f7e4f6, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
