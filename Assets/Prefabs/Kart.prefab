@@ -47,7 +47,6 @@ GameObject:
   - component: {fileID: 8343976533472122909}
   - component: {fileID: 5750422002150776483}
   - component: {fileID: 3519511876968373245}
-  - component: {fileID: 5891366721797524573}
   m_Layer: 6
   m_Name: Kart
   m_TagString: Untagged
@@ -193,18 +192,7 @@ MonoBehaviour:
   turboMaxSpeed: 40
   turboAcceleration: 5
   turboDiscountPerSecond: 10
---- !u!114 &5891366721797524573
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6191582452334268596}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 62320b14d00e70a49ae600ad1a5c1b4a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  _CanMove: 0
 --- !u!1001 &8786138939341494
 PrefabInstance:
   m_ObjectHideFlags: 0

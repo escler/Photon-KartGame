@@ -1,28 +1,29 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Fusion;
 using UnityEngine;
 
 public class GameManager : NetworkBehaviour
 {
+    public Dictionary<PlayerRef, Player> playerList = new Dictionary<PlayerRef, Player>();
     public static GameManager Instance { get; private set; }
     
-    public GameObject winGO, loseGO;
+    public GameObject winGO, loseGO, _countDownGO;
     public float lapsForWin;
-
-    private void Awake()
+    
+    public override void Spawned()
     {
         if (Instance)
         {
             Destroy(this);
             return;
         }
-
         Instance = this;
     }
 
-    [Rpc(RpcSources.All, RpcTargets.All)]
+    [Rpc(RpcSources.All,RpcTargets.All)]
     public void RPCWinChecker(int laps, PlayerRef playerRef)
     {
         if (laps < lapsForWin) return;
@@ -36,6 +37,40 @@ public class GameManager : NetworkBehaviour
         }
 
         enabled = false;
+    }
+
+    
+    [Rpc]
+    public void RPCAddToDictionary(PlayerRef playerRef, Player player)
+    {
+        playerList.Add(playerRef,player);
+        playerList[playerRef].CanMove = false;
+        RPCCheckCountPlayers();
+    }
+    
+    [Rpc]
+    private void RPCCheckCountPlayers()
+    {
+        if (Runner.ActivePlayers.Count() < 2) return;
+
+        _countDownGO.SetActive(true);
+        RPCCountdown();
+
+    }
+    
+    private void RPCCountdown()
+    {
+        if (!HasStateAuthority) return;
+        _countDownGO.GetComponent<CountDownUI>().StartTimer();
+    }
+
+    [Rpc]
+    public void RPCMoveObjects()
+    {
+        foreach (var pair in playerList)
+        {
+            pair.Value.CanMove = true;
+        }
     }
 
     private void Win()

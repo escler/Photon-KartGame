@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
+using UnityEditor;
 
 
 public class Player : NetworkBehaviour
@@ -23,12 +24,21 @@ public class Player : NetworkBehaviour
 
     private Rigidbody _rb;
 
+    [Networked]
+    public bool CanMove
+    {
+        get { return CanMove; }
+        set { CanMove = value; }
+    }
+
     private float _xAxi, _yAxi;
     private bool _moving, _turbo;
 
     public event Action OnTurboChange = delegate {  };
 
     public float NetworkedTurbo {get; private set; } = 100;
+    private int _lapsCount;
+
     
     #region Networked Color Change
     
@@ -46,6 +56,8 @@ public class Player : NetworkBehaviour
             NetworkedColor = GetComponentInChildren<Renderer>().material.color;
             Camera.main.GetComponentInParent<CameraFollow>()?.SetTarget(transform);
             _rb = GetComponent<Rigidbody>();
+            SubscribeToGameManager();
+            
         }
         else
         {
@@ -60,7 +72,7 @@ public class Player : NetworkBehaviour
     
     void Update()
     {
-        if (!HasStateAuthority) return;
+        if (!HasStateAuthority || !CanMove) return;
         
         _xAxi = Input.GetAxis("Vertical");
         _moving = _rb.velocity != Vector3.zero;
@@ -121,5 +133,23 @@ public class Player : NetworkBehaviour
     {
         NetworkedTurbo += amount;
         OnTurboChange.Invoke();
+    }
+
+    public void SendVictoryChecker()
+    {
+        if (!HasStateAuthority) return;
+
+        _lapsCount++;
+        GameManager.Instance.RPCWinChecker(_lapsCount, Runner.LocalPlayer);
+    }
+
+    public void SubscribeToGameManager()
+    {
+        if (GameManager.Instance == null)
+        {
+            Invoke("SubscribeToGameManager",1f);
+            return;
+        }
+        GameManager.Instance.RPCAddToDictionary(Runner.LocalPlayer,this); 
     }
 }
