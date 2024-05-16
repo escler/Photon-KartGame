@@ -11,9 +11,11 @@ public class PlayerSpawn : SimulationBehaviour, IPlayerJoined
     
     public void PlayerJoined(PlayerRef player)
     {
+        if (Runner.ActivePlayers.Count() > 2) return;
         if (player == Runner.LocalPlayer)
         {
-            Runner.Spawn(_playerPrefab, _spawnsPos[Runner.ActivePlayers.Count()-1].position, Quaternion.identity);
+            var refPlayer = Runner.Spawn(_playerPrefab, _spawnsPos[Runner.ActivePlayers.Count()-1].position, Quaternion.identity);
+            refPlayer.GetComponent<Player>().number = Runner.ActivePlayers.Count() - 1;
         }
     }
 }

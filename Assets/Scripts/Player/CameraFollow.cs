@@ -20,5 +20,6 @@ public class CameraFollow : MonoBehaviour
         newPos.z = _targetTransform.position.z + offSetZ;
         newPos.x = _targetTransform.position.x + offSetX;
         transform.position = newPos;
+        
     }
 }

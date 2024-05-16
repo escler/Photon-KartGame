@@ -45,6 +45,7 @@ public class GameManager : NetworkBehaviour
     {
         playerList.Add(playerRef,player);
         playerList[playerRef].CanMove = false;
+        if (!HasStateAuthority) return;
         RPCCheckCountPlayers();
     }
     
@@ -61,7 +62,7 @@ public class GameManager : NetworkBehaviour
     private void RPCCountdown()
     {
         if (!HasStateAuthority) return;
-        _countDownGO.GetComponent<CountDownUI>().StartTimer();
+        _countDownGO.GetComponent<CountDownUI>().RPCStartTimer();
     }
 
     [Rpc]

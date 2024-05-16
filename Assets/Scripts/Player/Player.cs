@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Fusion;
 using UnityEditor;
@@ -23,7 +24,11 @@ public class Player : NetworkBehaviour
     private float _appliedSpeed;
 
     private Rigidbody _rb;
+    
+    public Material[] carColors = new Material[2];
 
+    [Networked] public int number { get; set; }
+    
     [Networked]
     public bool CanMove
     {
@@ -39,13 +44,12 @@ public class Player : NetworkBehaviour
     public float NetworkedTurbo {get; private set; } = 100;
     private int _lapsCount;
 
+    public Renderer model;
+
     
     #region Networked Color Change
-    
-    [Networked, OnChangedRender(nameof(OnNetColorChanged))]
-    Color NetworkedColor { get; set; }
 
-    void OnNetColorChanged() => GetComponentInChildren<Renderer>().material.color = NetworkedColor;
+    private Material NetworkedMaterial;
     
     #endregion
     
@@ -53,21 +57,17 @@ public class Player : NetworkBehaviour
     {
         if (HasStateAuthority)
         {
-            NetworkedColor = GetComponentInChildren<Renderer>().material.color;
+            RPCChangeMaterial();
             Camera.main.GetComponentInParent<CameraFollow>()?.SetTarget(transform);
             _rb = GetComponent<Rigidbody>();
             SubscribeToGameManager();
             
         }
-        else
-        {
-            SynchronizeProperties();
-        }
     }
 
     void SynchronizeProperties()
     {
-        OnNetColorChanged();
+        RPCChangeMaterial();
     }
     
     void Update()
@@ -151,5 +151,11 @@ public class Player : NetworkBehaviour
             return;
         }
         GameManager.Instance.RPCAddToDictionary(Runner.LocalPlayer,this); 
+    }
+
+    [Rpc(RpcSources.StateAuthority,RpcTargets.All)]
+    public void RPCChangeMaterial()
+    {
+        model.material = carColors[number];
     }
 }
