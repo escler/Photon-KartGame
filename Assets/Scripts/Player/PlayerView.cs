@@ -1,20 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Fusion;
 using UnityEngine;
 
 public class PlayerView : NetworkBehaviour
 {
     public GameObject psTurbo;
-    private bool _turboActive;
     public override void Spawned()
     {
         var player = GetComponentInParent<Player>();
-        player.OnTurboActive += TriggerTurboPs;
+        player.OnTurboActive += RpcTriggerTurboPs;
     }
 
-    void TriggerTurboPs(bool turboState)
+    [Rpc(RpcSources.All,RpcTargets.All)]
+    void RpcTriggerTurboPs(bool turboState)
     {
+        if (Runner.ActivePlayers.Count() < 2) return;
         psTurbo.SetActive(turboState);
     }
 }

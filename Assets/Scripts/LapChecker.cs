@@ -13,6 +13,7 @@ public class LapChecker : MonoBehaviour
         if (other.TryGetComponent(out Player player))
         {
             if (!player.GetComponent<LocalPlayerReference>().isLocal) return;
+            
             GetComponent<BoxCollider>().enabled = false;
             nextTrigger.enabled = true;
             player.SendVictoryChecker();

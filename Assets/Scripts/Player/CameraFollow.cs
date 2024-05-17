@@ -12,7 +12,7 @@ public class CameraFollow : MonoBehaviour
         _targetTransform = target;
     }
     
-    void FixedUpdate()
+    void LateUpdate()
     {
         if (!_targetTransform) return;
 

@@ -11,9 +11,10 @@ public class GameManager : NetworkBehaviour
     public Dictionary<PlayerRef, Player> playerList = new Dictionary<PlayerRef, Player>();
     public static GameManager Instance { get; private set; }
 
-    public GameObject winGO, loseGO, countDownGo, lapsGO;
+    public GameObject winGo, loseGo, countDownGo, lapsGo;
     public float lapsForWin;
     [Networked] public bool GameStart { get; set; }
+    [Networked] public bool GameEnd { get; set; }
     
     public override void Spawned()
     {
@@ -23,13 +24,12 @@ public class GameManager : NetworkBehaviour
             return;
         }
         Instance = this;
-        GameStart = false;
     }
 
     [Rpc(RpcSources.All,RpcTargets.All)]
     public void RPCWinChecker(int laps, PlayerRef playerRef)
     {
-        if (laps < lapsForWin) return;
+        if (laps < lapsForWin || GameEnd) return;
         if (playerRef == Runner.LocalPlayer)
         {
             Win();
@@ -40,6 +40,8 @@ public class GameManager : NetworkBehaviour
         }
 
         enabled = false;
+        GameEnd = true;
+        RPCStopPlayers();
     }
 
     
@@ -53,9 +55,21 @@ public class GameManager : NetworkBehaviour
     }
     
     [Rpc]
+    public void RPCRemovePlayerFromDictionary(PlayerRef playerRef)
+    {
+        if (playerList.ContainsKey(playerRef)) playerList.Remove(playerRef);
+
+        RPCCheckCountPlayers();
+    }
+    
+    [Rpc]
     private void RPCCheckCountPlayers()
     {
-        if (Runner.ActivePlayers.Count() < 2) return;
+        if (Runner.ActivePlayers.Count() < 2)
+        {
+            countDownGo.SetActive(false);
+            return;
+        }
 
         countDownGo.SetActive(true);
         RPCCountdown();
@@ -73,20 +87,29 @@ public class GameManager : NetworkBehaviour
     {
         foreach (var pair in playerList)
         {
-            pair.Value.CanMove = true;
+            pair.Value.CanMovePlayer();
         }
-        lapsGO.SetActive(true);
+        lapsGo.SetActive(true);
 
         GameStart = true;
+    }
+    
+    [Rpc]
+    public void RPCStopPlayers()
+    {
+        foreach (var pair in playerList)
+        {
+            pair.Value.StopMovePlayer();
+        }
     }
 
     private void Win()
     {
-        winGO.SetActive(true);
+        winGo.SetActive(true);
     }
 
     private void Lose()
     {
-        loseGO.SetActive(true);
+        loseGo.SetActive(true);
     }
 }

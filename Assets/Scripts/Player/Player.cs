@@ -39,7 +39,9 @@ public class Player : NetworkBehaviour
     }
 
     private float _xAxi, _yAxi;
-    private bool _moving, _turbo;
+    private bool _moving;
+    [Networked]
+    private bool Turbo { get; set; }
 
     public event Action OnTurboChange = delegate {  };
     public event Action<bool> OnTurboActive = delegate {  };
@@ -57,15 +59,14 @@ public class Player : NetworkBehaviour
     
     public override void Spawned()
     {
+        RPCChangeMaterial();
         if (HasStateAuthority)
         {
             Camera.main.GetComponentInParent<CameraFollow>()?.SetTarget(transform);
             _rb = GetComponent<Rigidbody>();
             SubscribeToGameManager();
             NetworkedTurbo = 0;
-
         }
-        RPCChangeMaterial();
     }
     
     void Update()
@@ -74,25 +75,26 @@ public class Player : NetworkBehaviour
         
         _xAxi = Input.GetAxis("Vertical");
         _yAxi = Input.GetAxis("Horizontal");
-        _turbo = Input.GetButton("Turbo") && NetworkedTurbo > 0;
+        _moving = _rb.velocity != Vector3.zero;
+        Turbo = Input.GetButton("Turbo") && NetworkedTurbo > 0;
     }
 
     
     public override void FixedUpdateNetwork()
     {
-        if (!HasStateAuthority) return;
-        _moving = _rb.velocity != Vector3.zero;
-        if (_turbo) RPCTurbo();
-
-        OnTurboActive.Invoke(_turbo  && NetworkedTurbo > 0);
+        if (!HasStateAuthority || !CanMove) return;
+        
+        if (Turbo) RPCTurbo();
+        OnTurboActive.Invoke(Turbo);
+        
         Move();
         Rotate();
     }
 
     private void Move()
     {
-        _maxSpeed = _turbo ? turboMaxSpeed : maxSpeed;
-        _acceleration = _turbo ? turboAcceleration : acceleration;
+        _maxSpeed = Turbo ? turboMaxSpeed : maxSpeed;
+        _acceleration = Turbo ? turboAcceleration : acceleration;
         
         if (_xAxi > 0) _appliedSpeed = Mathf.Lerp(_appliedSpeed, _maxSpeed, _acceleration * Runner.DeltaTime);
         else if (_xAxi < 0) _appliedSpeed = Mathf.Lerp(_appliedSpeed, -reverserMaxSpeed, 1f * Runner.DeltaTime);
@@ -113,16 +115,17 @@ public class Player : NetworkBehaviour
         else if (_yAxi < 0) rot = Quaternion.Euler(Vector3.Lerp(_rb.rotation.eulerAngles, _rb.rotation.eulerAngles - Vector3.up * forceToSpin, Runner.DeltaTime));
         else rot = _rb.rotation;
         _rb.MoveRotation(rot);
-        
-        wheelLeft.localEulerAngles = new Vector3(0,45*_yAxi,0);
-        wheelRight.localEulerAngles = new Vector3(0,45*_yAxi,0);
+
+        wheelLeft.localEulerAngles = new Vector3(0, 45 * _yAxi, 0);
+        wheelRight.localEulerAngles = new Vector3(0, 45 * _yAxi, 0);
 
 
     }
 
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     private void RPCTurbo()
-    {        
+    {
+        _xAxi = 1;
         NetworkedTurbo -= turboDiscountPerSecond * Runner.DeltaTime;
         NetworkedTurbo = Mathf.Clamp(NetworkedTurbo, 0, 100);
         OnTurboChange.Invoke();
@@ -155,27 +158,28 @@ public class Player : NetworkBehaviour
     }
 
     [Rpc]
-    public void RPCChangeMaterial()
+    private void RPCChangeMaterial()
     {
         modelRenderer.material = carColors[number];
     }
 
-    private void OnCollisionEnter(Collision other)
+    private void OnCollisionStay(Collision other)
     {
         if (other.gameObject.layer == 8)
         {
-            maxSpeed /= 2;
-            turboMaxSpeed /= 2;
+            _appliedSpeed = Mathf.Clamp(_appliedSpeed, _maxSpeed / 6, _maxSpeed / 3);
         }
     }
 
-    private void OnCollisionExit(Collision other)
+    public void CanMovePlayer()
     {
-        if (other.gameObject.layer == 8)
-        {
-            maxSpeed *= 2;
-            turboMaxSpeed *= 2;
-        }
+        if (!HasStateAuthority) return;
+        CanMove = true;
     }
-
+    
+    public void StopMovePlayer()
+    {
+        if (!HasStateAuthority) return;
+        CanMove = false;
+    }
 }

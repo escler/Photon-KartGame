@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Fusion;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CountDownUI : NetworkBehaviour
@@ -31,6 +32,12 @@ public class CountDownUI : NetworkBehaviour
     public void RPCDisableTimer()
     {
         gameObject.SetActive(false);
+        StopCoroutine("Count");
+    }
+
+    void OnDisable()
+    {
+        StopCoroutine("Count");
     }
     
     IEnumerator Count()
