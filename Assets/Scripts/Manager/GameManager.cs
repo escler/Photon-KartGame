@@ -4,14 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using Fusion;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class GameManager : NetworkBehaviour
 {
     public Dictionary<PlayerRef, Player> playerList = new Dictionary<PlayerRef, Player>();
     public static GameManager Instance { get; private set; }
-    
-    public GameObject winGO, loseGO, _countDownGO;
+
+    public GameObject winGO, loseGO, countDownGo, lapsGO;
     public float lapsForWin;
+    [Networked] public bool GameStart { get; set; }
     
     public override void Spawned()
     {
@@ -21,6 +23,7 @@ public class GameManager : NetworkBehaviour
             return;
         }
         Instance = this;
+        GameStart = false;
     }
 
     [Rpc(RpcSources.All,RpcTargets.All)]
@@ -54,7 +57,7 @@ public class GameManager : NetworkBehaviour
     {
         if (Runner.ActivePlayers.Count() < 2) return;
 
-        _countDownGO.SetActive(true);
+        countDownGo.SetActive(true);
         RPCCountdown();
 
     }
@@ -62,7 +65,7 @@ public class GameManager : NetworkBehaviour
     private void RPCCountdown()
     {
         if (!HasStateAuthority) return;
-        _countDownGO.GetComponent<CountDownUI>().RPCStartTimer();
+        countDownGo.GetComponent<CountDownUI>().RPCStartTimer();
     }
 
     [Rpc]
@@ -72,6 +75,9 @@ public class GameManager : NetworkBehaviour
         {
             pair.Value.CanMove = true;
         }
+        lapsGO.SetActive(true);
+
+        GameStart = true;
     }
 
     private void Win()

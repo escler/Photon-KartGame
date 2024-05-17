@@ -16,6 +16,8 @@ public class CountDownUI : NetworkBehaviour
     {
         if (!HasStateAuthority) return;
         _tmp.text = timer.ToString();
+        timer = 10;
+        StopCoroutine("Count");
         StartCoroutine("Count");
     }
 
