@@ -4,7 +4,7 @@
 PlayerSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 26
-  productGUID: 5f192bdde48cfca428be8e7718762173
+  productGUID: c715c36e6d3ae2749a1ae4a6800f179d
   AndroidProfiler: 0
   AndroidFilterTouchesWhenObscured: 0
   AndroidEnableSustainedPerformanceMode: 0
@@ -13,7 +13,7 @@ PlayerSettings:
   useOnDemandResources: 0
   accelerometerFrequency: 60
   companyName: DefaultCompany
-  productName: Photon-RaceGame
+  productName: Photon-Host-KartGame
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
@@ -90,7 +90,7 @@ PlayerSettings:
   bakeCollisionMeshes: 0
   forceSingleInstance: 0
   useFlipModelSwapchain: 1
-  resizableWindow: 1
+  resizableWindow: 0
   useMacAppStoreValidation: 0
   macAppStoreCategory: public.app-category.games
   gpuSkinning: 1
@@ -674,14 +674,14 @@ PlayerSettings:
   apiCompatibilityLevelPerPlatform: {}
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
-  metroPackageName: Photon-RaceGame
+  metroPackageName: Photon-Host-KartGame
   metroPackageVersion: 
   metroCertificatePath: 
   metroCertificatePassword: 
   metroCertificateSubject: 
   metroCertificateIssuer: 
   metroCertificateNotAfter: 0000000000000000
-  metroApplicationDescription: Photon-RaceGame
+  metroApplicationDescription: Photon-Host-KartGame
   wsaImages: {}
   metroTileShortName: 
   metroTileShowName: 0
@@ -750,10 +750,10 @@ PlayerSettings:
   apiCompatibilityLevel: 6
   activeInputHandler: 0
   windowsGamepadBackendHint: 0
-  cloudProjectId: a10725ca-8dd3-4125-b18b-d98650603e3c
+  cloudProjectId: 43739d68-9c0c-4926-bd62-8bad6d107eed
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: Photon-RaceGame
+  projectName: Photon-Host-KartGame
   organizationId: escler
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0

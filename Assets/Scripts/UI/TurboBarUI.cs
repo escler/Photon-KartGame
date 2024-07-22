@@ -22,13 +22,12 @@ public class TurboBarUI : MonoBehaviour
 
     private void TryGetLocalPlayer()
     {
-        if (LocalPlayerReference.Instance == null)
+        if (!NetworkPlayer.Local)
         {
             Invoke("TryGetLocalPlayer",1f);
             return;
         }
-        
-        _localPlayer = LocalPlayerReference.Instance.GetComponent<Player>();
+        _localPlayer = NetworkPlayer.Local.GetComponent<Player>();
         _localPlayer.OnTurboChange += UpdateSlider;
         UpdateSlider();
     }

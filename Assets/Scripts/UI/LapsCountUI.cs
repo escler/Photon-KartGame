@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using Fusion;
 using TMPro;
 using UnityEngine;
@@ -13,14 +10,13 @@ public class LapsCountUI : NetworkBehaviour
 
     public void OnEnable()
     {
-        _player = LocalPlayerReference.Instance.GetComponent<Player>();
-        UpdateLaps();
+        _player = NetworkPlayer.Local.GetComponent<Player>();
         _player.OnLapFinish += UpdateLaps;
+        UpdateLaps();
     }
-
     private void UpdateLaps()
     {
-        _currentLaps = _player.LapsCount + 1;
+        _currentLaps = _player.lapsCount + 1;
         _tmp.text = "Laps \n" + _currentLaps + "/3";
     }
 

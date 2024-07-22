@@ -10,26 +10,58 @@ using UnityEngine;
 public class CountDownUI : NetworkBehaviour
 {
     [SerializeField] private TextMeshProUGUI _tmp;
-    [Networked] public float timer { get; set; }
-    private float playerCount;
+    [Networked] private float timer { get; set; }
+    [Networked] private NetworkBool StartTimer { get; set; }
+    [Networked] private NetworkBool RefreshTimer { get; set; }
+    [Networked] private NetworkBool DisableTime { get; set; }
+    private ChangeDetector _changeDetector;
 
-    public void RPCStartTimer()
+    
+    public override void Spawned()
     {
-        if (!HasStateAuthority) return;
-        _tmp.text = timer.ToString();
+        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+    }
+
+    public override void Render()
+    {
+        foreach (var change in _changeDetector.DetectChanges(this))
+        {
+            switch (change)
+            {
+                case nameof(StartTimer):
+                    ResetTimer();
+                    break;
+                case nameof(RefreshTimer):
+                    UpdateTimer();
+                    break;
+                case nameof(DisableTime):
+                    DisableTimer();
+                    break;
+            }
+        }
+    }
+    
+    public void StartTime()
+    {
+        StartTimer = !StartTimer;
+    }
+
+    private void ResetTimer()
+    {
         timer = 10;
+        _tmp.text = timer.ToString();
+        if (!HasStateAuthority) return;
+        
         StopCoroutine("Count");
         StartCoroutine("Count");
     }
 
-    [Rpc]
-    public void RPCUpdateTimer()
+    private void UpdateTimer()
     {
         _tmp.text = timer.ToString();
     }
     
-    [Rpc]
-    public void RPCDisableTimer()
+    private void DisableTimer()
     {
         gameObject.SetActive(false);
         StopCoroutine("Count");
@@ -45,11 +77,11 @@ public class CountDownUI : NetworkBehaviour
         while (timer > 0)
         {
             timer--;
-            RPCUpdateTimer();
+            RefreshTimer = !RefreshTimer;
             yield return new WaitForSeconds(1f);
         }
 
-        GameManager.Instance.RPCMoveObjects();
-        RPCDisableTimer();
+        GameManager.Local.StartRace = !GameManager.Local.StartRace;
+        DisableTime = !DisableTime;
     }
 }

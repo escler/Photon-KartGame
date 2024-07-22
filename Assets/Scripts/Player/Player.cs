@@ -1,22 +1,18 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using Fusion;
-using UnityEditor;
-using UnityEngine.Serialization;
-using UnityEngine.UIElements;
+using System.Linq;
+
 
 
 public class Player : NetworkBehaviour
 {
-    [Header("Stats")]
-    public float maxSpeed;
+    [Header("Stats")] public float maxSpeed;
     public float acceleration;
     public float deceleration;
     public float steer;
-    public float  reverserMaxSpeed;
+    public float reverserMaxSpeed;
     public float turboMaxSpeed;
     public float turboAcceleration;
     public float turboDiscountPerSecond;
@@ -25,14 +21,16 @@ public class Player : NetworkBehaviour
     private float _acceleration;
     private float _appliedSpeed;
 
-    private Rigidbody _rb;
+    [Networked] public int mapZone { get; set; }
     
+    private Rigidbody _rb;
+
     public Material[] carColors = new Material[5];
 
     [Networked] public int number { get; set; }
-    
+
     [Networked]
-    public bool CanMove
+    public NetworkBool CanMove
     {
         get { return CanMove; }
         set { CanMove = value; }
@@ -40,16 +38,17 @@ public class Player : NetworkBehaviour
 
     private float _xAxi, _yAxi;
     private bool _moving;
-    [Networked]
-    private bool Turbo { get; set; }
+    [Networked] NetworkBool Turbo { get; set; }
+    [Networked] public NetworkBool LapFinish { get; set; }
+    [Networked] NetworkBool ChangeColor { get; set; }
+    [Networked] public NetworkBool AddEnergy { get; set; }
 
-    public event Action OnTurboChange = delegate {  };
-    public event Action<bool> OnTurboActive = delegate {  };
-    public event Action OnLapFinish = delegate {  };
+    public event Action OnTurboChange = delegate { };
+    public event Action OnLapFinish = delegate { };
 
-    public float NetworkedTurbo {get; private set; } = 100;
-    private int _lapsCount;
-    public int LapsCount => _lapsCount;
+    [Networked] public float NetworkedTurbo { get; private set; } = 100;
+
+    public int lapsCount;
 
     public Renderer modelRenderer;
 
@@ -57,36 +56,67 @@ public class Player : NetworkBehaviour
 
     public Transform wheelLeft, wheelRight;
     
-    public override void Spawned()
+    private ChangeDetector _changeDetector;
+    private PlayerView _view;
+
+    private void Awake()
     {
-        RPCChangeMaterial();
-        if (HasStateAuthority)
-        {
-            Camera.main.GetComponentInParent<CameraFollow>()?.SetTarget(transform);
-            _rb = GetComponent<Rigidbody>();
-            SubscribeToGameManager();
-            NetworkedTurbo = 0;
-        }
-    }
-    
-    void Update()
-    {
-        if (!HasStateAuthority || !CanMove) return;
-        
-        _xAxi = Input.GetAxis("Vertical");
-        _yAxi = Input.GetAxis("Horizontal");
-        _moving = _rb.velocity != Vector3.zero;
-        Turbo = Input.GetButton("Turbo") && NetworkedTurbo > 0;
+        _rb = GetComponent<Rigidbody>();
+        _view = GetComponentInChildren<PlayerView>();
     }
 
-    
+    public override void Spawned()
+    {
+        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+        StartCoroutine(NotifyGameManager());
+        ChangeColor = !ChangeColor;
+
+    }
+
+    IEnumerator NotifyGameManager()
+    {
+        yield return new WaitForEndOfFrame();
+    }
+
+    public override void Render()
+    {
+        foreach (var change in _changeDetector.DetectChanges(this))
+        {
+            switch (change)
+            {
+                case nameof(Turbo):
+                {
+                    _view.RpcTriggerTurboPs(Turbo);
+                    RPCTurbo();
+                    break;
+                }
+                case nameof(AddEnergy):
+                {
+                    RefreshEnergy();
+                    break;
+                }
+                case nameof(LapFinish):
+                {
+                    UpdateLapInfo();
+                    break;
+                }
+                case nameof(ChangeColor):
+                {
+                    ChangeCarColor();
+                    break;
+                }
+            }
+        }
+    }
+
     public override void FixedUpdateNetwork()
     {
-        if (!HasStateAuthority || !CanMove) return;
-        
-        if (Turbo) RPCTurbo();
-        OnTurboActive.Invoke(Turbo);
-        
+        if (!GetInput(out NetworkInputData networkInputData)) return;
+
+        if (!CanMove) return;
+        _xAxi = networkInputData.verticalInput;
+        _yAxi = networkInputData.horizontalInput;
+        Turbo = networkInputData.turboPressed && NetworkedTurbo > 0;
         Move();
         Rotate();
     }
@@ -95,11 +125,11 @@ public class Player : NetworkBehaviour
     {
         _maxSpeed = Turbo ? turboMaxSpeed : maxSpeed;
         _acceleration = Turbo ? turboAcceleration : acceleration;
-        
+
         if (_xAxi > 0) _appliedSpeed = Mathf.Lerp(_appliedSpeed, _maxSpeed, _acceleration * Runner.DeltaTime);
         else if (_xAxi < 0) _appliedSpeed = Mathf.Lerp(_appliedSpeed, -reverserMaxSpeed, 1f * Runner.DeltaTime);
         else _appliedSpeed = Mathf.Lerp(_appliedSpeed, 0, deceleration * Runner.DeltaTime);
-        
+
         var vel = (_rb.rotation * Vector3.forward) * _appliedSpeed;
         vel.y = _rb.velocity.y;
         _rb.velocity = vel;
@@ -107,79 +137,63 @@ public class Player : NetworkBehaviour
 
     private void Rotate()
     {
-        if (!_moving) return;
         Quaternion rot;
-        var forceToSpin = steer * Mathf.Clamp((_maxSpeed - _appliedSpeed) / _maxSpeed,0.5f,1);
-        
-        if(_yAxi > 0) rot = Quaternion.Euler(Vector3.Lerp(_rb.rotation.eulerAngles,_rb.rotation.eulerAngles + Vector3.up * forceToSpin, Runner.DeltaTime));
-        else if (_yAxi < 0) rot = Quaternion.Euler(Vector3.Lerp(_rb.rotation.eulerAngles, _rb.rotation.eulerAngles - Vector3.up * forceToSpin, Runner.DeltaTime));
+        var forceToSpin = steer * Mathf.Clamp((_maxSpeed - _appliedSpeed) / _maxSpeed, 0.8f, 1);
+
+        if (_yAxi > 0)
+            rot = Quaternion.Euler(Vector3.Lerp(_rb.rotation.eulerAngles,
+                _rb.rotation.eulerAngles + Vector3.up * forceToSpin, Runner.DeltaTime));
+        else if (_yAxi < 0)
+            rot = Quaternion.Euler(Vector3.Lerp(_rb.rotation.eulerAngles,
+                _rb.rotation.eulerAngles - Vector3.up * forceToSpin, Runner.DeltaTime));
         else rot = _rb.rotation;
         _rb.MoveRotation(rot);
 
         wheelLeft.localEulerAngles = new Vector3(0, 45 * _yAxi, 0);
         wheelRight.localEulerAngles = new Vector3(0, 45 * _yAxi, 0);
-
-
     }
 
-    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     private void RPCTurbo()
     {
-        _xAxi = 1;
-        NetworkedTurbo -= turboDiscountPerSecond * Runner.DeltaTime;
-        NetworkedTurbo = Mathf.Clamp(NetworkedTurbo, 0, 100);
-        OnTurboChange.Invoke();
+        StartCoroutine(TurboCoroutine());
     }
 
-    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    public void RPCAddEnergy(float amount)
+    IEnumerator TurboCoroutine()
     {
-        NetworkedTurbo += amount;
-        OnTurboChange.Invoke();
-    }
-
-    public void SendVictoryChecker()
-    {
-        if (!HasStateAuthority) return;
-
-        _lapsCount++;
-        OnLapFinish?.Invoke();
-        GameManager.Instance.RPCWinChecker(_lapsCount, Runner.LocalPlayer);
-    }
-
-    public void SubscribeToGameManager()
-    {
-        if (GameManager.Instance == null)
+        while (Turbo && NetworkedTurbo > 0)
         {
-            Invoke("SubscribeToGameManager",1f);
-            return;
+            if(!Turbo) StopCoroutine(TurboCoroutine());
+            _xAxi = 1;
+            NetworkedTurbo -= turboDiscountPerSecond * Runner.DeltaTime;
+            NetworkedTurbo = Mathf.Clamp(NetworkedTurbo, 0, 100);
+            OnTurboChange.Invoke();
+            yield return new WaitForSeconds(Runner.DeltaTime);
         }
-        GameManager.Instance.RPCAddToDictionary(Runner.LocalPlayer,this); 
     }
 
-    [Rpc]
-    private void RPCChangeMaterial()
+    private void RefreshEnergy()
+    {
+        NetworkedTurbo = 100;
+        OnTurboChange.Invoke();
+    }
+
+    private void UpdateLapInfo()
+    {
+        lapsCount++;
+        OnLapFinish.Invoke();
+        CheckWin();
+    }
+
+    private void CheckWin()
+    {
+        GameManager.Local.RPCWinChecker(lapsCount, GetComponent<NetworkPlayer>());
+        print("AYUDAAAAAAAAAAAA");
+    }
+
+    private void ChangeCarColor()
     {
         modelRenderer.material = carColors[number];
     }
 
-    private void OnCollisionStay(Collision other)
-    {
-        if (other.gameObject.layer == 8)
-        {
-            _appliedSpeed = Mathf.Clamp(_appliedSpeed, _maxSpeed / 6, _maxSpeed / 3);
-        }
-    }
-
-    public void CanMovePlayer()
-    {
-        if (!HasStateAuthority) return;
-        CanMove = true;
-    }
-    
-    public void StopMovePlayer()
-    {
-        if (!HasStateAuthority) return;
-        CanMove = false;
-    }
 }
+
