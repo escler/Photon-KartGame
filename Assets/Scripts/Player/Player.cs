@@ -20,8 +20,10 @@ public class Player : NetworkBehaviour
     private float _maxSpeed;
     private float _acceleration;
     private float _appliedSpeed;
+    
+    public bool readyCheck;
 
-    [Networked] public int mapZone { get; set; }
+    [Networked] public int MapZone { get; set; }
     
     private Rigidbody _rb;
 
@@ -41,14 +43,18 @@ public class Player : NetworkBehaviour
     [Networked] NetworkBool Turbo { get; set; }
     [Networked] public NetworkBool LapFinish { get; set; }
     [Networked] NetworkBool ChangeColor { get; set; }
+    [Networked] private NetworkBool ChangeReady { get; set; }
+    [Networked] public NetworkBool ChangeLocation { get; set; }
     [Networked] public NetworkBool AddEnergy { get; set; }
 
     public event Action OnTurboChange = delegate { };
     public event Action OnLapFinish = delegate { };
 
     [Networked] public float NetworkedTurbo { get; private set; } = 100;
+    [Networked] public int NetworkedColor { get; private set; } = 0;
 
     public int lapsCount;
+    private bool _changingColor;
 
     public Renderer modelRenderer;
 
@@ -69,7 +75,7 @@ public class Player : NetworkBehaviour
     {
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
         StartCoroutine(NotifyGameManager());
-        ChangeColor = !ChangeColor;
+        CanMove = true;
 
     }
 
@@ -102,7 +108,18 @@ public class Player : NetworkBehaviour
                 }
                 case nameof(ChangeColor):
                 {
+                    ChangeColorCount();
                     ChangeCarColor();
+                    break;
+                }
+                case nameof(ChangeReady):
+                {
+                    ReadyCheck();
+                    break;
+                }
+                case nameof(ChangeLocation):
+                {
+                    MoveToRace();
                     break;
                 }
             }
@@ -113,7 +130,19 @@ public class Player : NetworkBehaviour
     {
         if (!GetInput(out NetworkInputData networkInputData)) return;
 
-        if (!CanMove) return;
+        if (networkInputData.checkButton) ChangeReady = !ChangeReady;
+
+        if (networkInputData.changeColor)
+        {
+            ChangeColor = !ChangeColor;
+        }
+        if (!CanMove)
+        {
+            _xAxi = 0;
+            _yAxi = 0;
+            _rb.velocity = Vector3.zero;
+            return;
+        }
         _xAxi = networkInputData.verticalInput;
         _yAxi = networkInputData.horizontalInput;
         Turbo = networkInputData.turboPressed && NetworkedTurbo > 0;
@@ -187,12 +216,28 @@ public class Player : NetworkBehaviour
     private void CheckWin()
     {
         GameManager.Local.RPCWinChecker(lapsCount, GetComponent<NetworkPlayer>());
-        print("AYUDAAAAAAAAAAAA");
     }
 
+    private void ReadyCheck()
+    {
+        readyCheck = !readyCheck;
+        GameManager.Local.CheckReadyState();
+    }
+
+    private void ChangeColorCount()
+    {
+        NetworkedColor++;
+        if (NetworkedColor >= carColors.Length) NetworkedColor = 0;
+    }
+    
     private void ChangeCarColor()
     {
-        modelRenderer.material = carColors[number];
+        modelRenderer.material = carColors[NetworkedColor];
+    }
+
+    public void MoveToRace()
+    {
+        FindObjectOfType<Spawner>().SetPosition(number, "Race", this);
     }
 
 }

@@ -43,6 +43,7 @@ public class CountDownUI : NetworkBehaviour
     
     public void StartTime()
     {
+        _tmp.enabled = true;
         StartTimer = !StartTimer;
     }
 
@@ -63,7 +64,7 @@ public class CountDownUI : NetworkBehaviour
     
     private void DisableTimer()
     {
-        gameObject.SetActive(false);
+        _tmp.enabled = false;
         StopCoroutine("Count");
     }
 

@@ -9,12 +9,12 @@ public class LapChecker : NetworkBehaviour
     {
         if (other.TryGetComponent(out Player player))
         {
-            if (player.mapZone != checkNeeded)
+            if (player.MapZone != checkNeeded)
             {
                 return;
             }
 
-            player.mapZone = check;
+            player.MapZone = check;
             if (checkNeeded == 3)
             {
                 player.LapFinish = !player.LapFinish;

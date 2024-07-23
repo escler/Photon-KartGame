@@ -56,7 +56,7 @@ public class MainMenuHandler : MonoBehaviour
     void Btn_CreateGameSession()
     {
         _hostBTN.interactable = false;
-        _networkHandler.CreateGame(_hostSessionName.text, "Game");
+        _networkHandler.CreateGame(_hostSessionName.text, "Lobby");
     }
     
 }

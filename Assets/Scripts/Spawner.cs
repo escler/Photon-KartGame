@@ -11,7 +11,7 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
     [SerializeField] private NetworkPrefabRef _playerPrefab;
 
     private NetworkObject playerObj;
-    private Vector3[] positions = new[]
+    private Vector3[] positionsRace = new[]
     {
         new Vector3(-12.4f, 0.5f, -7.06f),
         new Vector3(-6.2f, 0.5f, -7.06f),
@@ -19,19 +19,42 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
         new Vector3(6.8f, 0.5f, -7.06f),
         new Vector3(13f, 0.5f, -7.06f)
     };
+    private Vector3[] positionsLobby = new[]
+    {
+        new Vector3(-12.4f, 0.5f, -1736.99f),
+        new Vector3(-6.2f, 0.5f, -1736.99f),
+        new Vector3(0.4f, 0.5f, -1736.99f),
+        new Vector3(6.8f, 0.5f, -1736.99f),
+        new Vector3(13f, 0.5f, -1736.99f)
+    };
+
+    public void SetPosition(int position, string gameName, Player player)
+    {
+        switch (gameName)
+        {
+            case "Lobby":
+                player.gameObject.transform.position = positionsLobby[position];
+                player.transform.rotation = Quaternion.identity;
+                break;
+            case "Race":
+                player.transform.position = positionsRace[position];
+                player.transform.rotation = Quaternion.identity;
+                break;
+        }
+    }
 
     
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
     {
         if (runner.IsServer)
         {
-            playerObj = runner.Spawn(_playerPrefab, null, null, player);
-            playerObj.transform.position = positions[runner.ActivePlayers.Count() - 1];
+            playerObj = runner.Spawn(_playerPrefab, null, null, player);    
+            playerObj.transform.position = positionsLobby[runner.ActivePlayers.Count() - 1];
             playerObj.GetComponent<Player>().number = runner.ActivePlayers.Count() - 1;
             StartCoroutine(AddPlayer());
         }
         
-        if (runner.ActivePlayers.Count() > 1) StartCoroutine(CheckGameManager());
+        //if (runner.ActivePlayers.Count() > 1) StartCoroutine(CheckGameManager());
     }
 
     IEnumerator AddPlayer()

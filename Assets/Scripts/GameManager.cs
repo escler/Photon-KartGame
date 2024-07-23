@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Fusion;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : NetworkBehaviour
 {
@@ -49,7 +50,6 @@ public class GameManager : NetworkBehaviour
     [Rpc(RpcSources.All,RpcTargets.All)]
     public void RPCWinChecker(int laps, NetworkPlayer player)
     {
-        
         if (laps < lapsForWin) return;
 
         win = true;
@@ -58,19 +58,43 @@ public class GameManager : NetworkBehaviour
         ShowScreen(_winner);
     }
 
+    public void CheckReadyState()
+    {
+        if (!HasStateAuthority) return;
+        int countReady = 0;
+        foreach (var player in activePlayers)
+        {
+            if(!player.GetComponent<Player>().readyCheck) break;
+            countReady++;
+        }
+
+        if (countReady == activePlayers.Count && activePlayers.Count > 0)
+        {
+            Runner.UnloadScene(SceneRef.FromIndex(2));
+            Runner.LoadScene(SceneRef.FromIndex(2), LoadSceneMode.Additive);
+
+            foreach (var player in activePlayers)
+            {
+                player.GetComponent<Player>().readyCheck = false;
+                player.GetComponent<Player>().CanMove = player.GetComponent<Player>().CanMove = false;
+            }
+        }
+    }
+
     private void PlayerMoving()
     {
         foreach (var player in activePlayers)
         {
             var p = player.GetComponent<Player>();
             if (p == null) continue;
-            p.CanMove = !p.CanMove;
+            p.CanMove = true;
         }
     }
     
     private void ShowScreen(NetworkPlayer player)
     {
         if (_screenShowed) return;
+        lapsGo.GetComponent<LapsCountUI>().FinishRace();
         if (player.HasInputAuthority) Win();
         else Lose();
     }
@@ -88,12 +112,14 @@ public class GameManager : NetworkBehaviour
 
     private void ShowTimeCount()
     {
+        if (countDownGo == null) countDownGo = FindObjectOfType<CountDownUI>().gameObject;
         countDownGo.SetActive(true);
         countDownGo.GetComponent<CountDownUI>().StartTime();
     }
 
     void ShowLaps()
     {
-        lapsGo.SetActive(true);
+        if (lapsGo == null) lapsGo = FindObjectOfType<LapsCountUI>().gameObject;
+        lapsGo.GetComponent<LapsCountUI>().StartRace();
     }
 }

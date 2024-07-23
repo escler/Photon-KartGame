@@ -14,6 +14,16 @@ public class LapsCountUI : NetworkBehaviour
         _player.OnLapFinish += UpdateLaps;
         UpdateLaps();
     }
+
+    public void StartRace()
+    {
+        _tmp.enabled = true;
+    }
+
+    public void FinishRace()
+    {
+        _tmp.enabled = false;
+    }
     private void UpdateLaps()
     {
         _currentLaps = _player.lapsCount + 1;
