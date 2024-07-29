@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 using Fusion;
 using System.Linq;
-
+using UnityEditor;
 
 
 public class Player : NetworkBehaviour
@@ -20,8 +20,10 @@ public class Player : NetworkBehaviour
     private float _maxSpeed;
     private float _acceleration;
     private float _appliedSpeed;
-    
+
+    private int clockTime;
     public bool readyCheck;
+    private NetworkTransform _nTransform;
 
     [Networked] public int MapZone { get; set; }
     
@@ -43,7 +45,7 @@ public class Player : NetworkBehaviour
     [Networked] NetworkBool Turbo { get; set; }
     [Networked] public NetworkBool LapFinish { get; set; }
     [Networked] NetworkBool ChangeColor { get; set; }
-    [Networked] private NetworkBool ChangeReady { get; set; }
+    [Networked] public NetworkBool ChangeReady { get; set; }
     [Networked] public NetworkBool ChangeLocation { get; set; }
     [Networked] public NetworkBool AddEnergy { get; set; }
 
@@ -76,6 +78,7 @@ public class Player : NetworkBehaviour
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
         StartCoroutine(NotifyGameManager());
         CanMove = true;
+        _nTransform = GetComponent<NetworkTransform>();
 
     }
 
@@ -130,7 +133,7 @@ public class Player : NetworkBehaviour
     {
         if (!GetInput(out NetworkInputData networkInputData)) return;
 
-        if (networkInputData.checkButton) ChangeReady = !ChangeReady;
+        if (networkInputData.checkButton && !GameManager.Local.raceIsStarted) ChangeReady = !ChangeReady;
 
         if (networkInputData.changeColor)
         {
@@ -237,8 +240,18 @@ public class Player : NetworkBehaviour
 
     public void MoveToRace()
     {
-        FindObjectOfType<Spawner>().SetPosition(number, "Race", this);
+        clockTime = 3;
+        StartCoroutine(MoveToPos());
     }
 
+    IEnumerator MoveToPos()
+    {
+        while (!CanMove)
+        {
+            FindObjectOfType<Spawner>().SetPosition(number, "Race", this);
+            yield return new WaitForSeconds(.1f);
+        }
+        yield return null;
+    }
 }
 

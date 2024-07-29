@@ -8,7 +8,6 @@ public class RaceStart : NetworkBehaviour
 {
     public override void Spawned()
     {
-        SetPosition();
         StartRace();
     }
 
@@ -16,9 +15,16 @@ public class RaceStart : NetworkBehaviour
     {
         foreach (var player in GameManager.Local.activePlayers)
         {
+            player.GetComponent<Player>().MoveToRace();
+        }
+    }
+
+    void FreezeVelocity()
+    {
+        foreach (var player in GameManager.Local.activePlayers)
+        {
             player.GetComponent<Player>().CanMove = false;
             player.GetComponent<Rigidbody>().velocity = Vector3.zero;
-            player.GetComponent<Player>().ChangeLocation = !player.GetComponent<Player>().ChangeLocation;
         }
     }
 
@@ -29,7 +35,10 @@ public class RaceStart : NetworkBehaviour
 
     IEnumerator StartRaceI()
     {
+        FreezeVelocity();
         yield return new WaitForSeconds(.3f);
+        SetPosition();
+        yield return new WaitForSeconds(1f);
         GameManager.Local.Countdown = !GameManager.Local.Countdown;
     }
 }

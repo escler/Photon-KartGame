@@ -19,6 +19,7 @@ public class GameManager : NetworkBehaviour
     private ChangeDetector _changeDetector;
     private NetworkPlayer _winner;
     private bool _screenShowed;
+    public bool raceIsStarted;
 
     public override void Spawned()
     {
@@ -35,23 +36,34 @@ public class GameManager : NetworkBehaviour
                 case nameof(Countdown):
                 {
                     ShowTimeCount();
+                    raceIsStarted = true;
                     break;
                 }
                 case nameof(StartRace):
                 {
                     PlayerMoving();
                     ShowLaps();
+                    UncheckedReadys();
                     break;
                 }
             }
         }
     }
-    
+
+    private void UncheckedReadys()
+    {
+        foreach (var player in activePlayers)
+        {
+            player.GetComponent<Player>().ChangeReady = false;
+        }
+    }
+
     [Rpc(RpcSources.All,RpcTargets.All)]
     public void RPCWinChecker(int laps, NetworkPlayer player)
     {
         if (laps < lapsForWin) return;
 
+        raceIsStarted = false;
         win = true;
         StartRace = !StartRace;
         _winner = player;
@@ -68,7 +80,7 @@ public class GameManager : NetworkBehaviour
             countReady++;
         }
 
-        if (countReady == activePlayers.Count && activePlayers.Count > 0)
+        if (countReady == activePlayers.Count && activePlayers.Count > 0 && !raceIsStarted)
         {
             Runner.UnloadScene(SceneRef.FromIndex(2));
             Runner.LoadScene(SceneRef.FromIndex(2), LoadSceneMode.Additive);
@@ -100,13 +112,15 @@ public class GameManager : NetworkBehaviour
     }
     private void Win()
     {
-        winGo.SetActive(true);
+        if (winGo == null) winGo = FindObjectOfType<WinText>().gameObject;
+        winGo.GetComponent<WinText>().ShowScreen();
         _screenShowed = true;
     }
 
     private void Lose()
     {
-        loseGo.SetActive(true);
+        if (loseGo == null) loseGo = FindObjectOfType<LoseText>().gameObject;
+        loseGo.GetComponent<LoseText>().ShowScreen();;
         _screenShowed = true;
     }
 

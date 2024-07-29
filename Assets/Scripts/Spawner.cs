@@ -11,21 +11,21 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
     [SerializeField] private NetworkPrefabRef _playerPrefab;
 
     private NetworkObject playerObj;
-    private Vector3[] positionsRace = new[]
+    private Vector3[] positionsRace =
     {
-        new Vector3(-12.4f, 0.5f, -7.06f),
-        new Vector3(-6.2f, 0.5f, -7.06f),
-        new Vector3(0.4f, 0.5f, -7.06f),
-        new Vector3(6.8f, 0.5f, -7.06f),
-        new Vector3(13f, 0.5f, -7.06f)
+        new (-12.4f, 0.5f, -7.06f),
+        new (-6.2f, 0.5f, -7.06f),
+        new (0.4f, 0.5f, -7.06f),
+        new (6.8f, 0.5f, -7.06f),
+        new (13f, 0.5f, -7.06f)
     };
-    private Vector3[] positionsLobby = new[]
+    private Vector3[] positionsLobby =
     {
-        new Vector3(-12.4f, 0.5f, -1736.99f),
-        new Vector3(-6.2f, 0.5f, -1736.99f),
-        new Vector3(0.4f, 0.5f, -1736.99f),
-        new Vector3(6.8f, 0.5f, -1736.99f),
-        new Vector3(13f, 0.5f, -1736.99f)
+        new (-12.4f, 0.5f, -1736.99f),
+        new (-6.2f, 0.5f, -1736.99f),
+        new (0.4f, 0.5f, -1736.99f),
+        new (6.8f, 0.5f, -1736.99f),
+        new (13f, 0.5f, -1736.99f)
     };
 
     public void SetPosition(int position, string gameName, Player player)
@@ -53,8 +53,6 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
             playerObj.GetComponent<Player>().number = runner.ActivePlayers.Count() - 1;
             StartCoroutine(AddPlayer());
         }
-        
-        //if (runner.ActivePlayers.Count() > 1) StartCoroutine(CheckGameManager());
     }
 
     IEnumerator AddPlayer()
