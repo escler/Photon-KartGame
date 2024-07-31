@@ -21,11 +21,11 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
     };
     private Vector3[] positionsLobby =
     {
-        new (-12.4f, 0.5f, -1736.99f),
-        new (-6.2f, 0.5f, -1736.99f),
-        new (0.4f, 0.5f, -1736.99f),
-        new (6.8f, 0.5f, -1736.99f),
-        new (13f, 0.5f, -1736.99f)
+        new (-64.9f, 0.5f, -1743.59f),
+        new (-65.8f, 0.5f, -1699.83f),
+        new (-62.8f, 0.5f, -1654.93f),
+        new (-51.5f, 0.5f, -1724.23f),
+        new (-53.3f, 0.5f, -1690.13f)
     };
 
     public void SetPosition(int position, string gameName, Player player)

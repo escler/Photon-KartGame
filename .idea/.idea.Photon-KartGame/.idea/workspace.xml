@@ -13,6 +13,7 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/a87a815ce9694a5ab7ddf97705612be2ab400/98/00fc8a08/NetworkRunner.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/a87a815ce9694a5ab7ddf97705612be2ab400/a6/87909ccf/StartGameArgs.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Lobby/ChangeColor.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/RaceStart.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/UI/LoseText.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/UI/WinText.cs" root0="FORCE_HIGHLIGHTING" />
@@ -106,6 +107,7 @@
       <updated>1721685386101</updated>
       <workItem from="1721685389904" duration="13839000" />
       <workItem from="1722213550863" duration="5308000" />
+      <workItem from="1722376761562" duration="4654000" />
     </task>
     <servers />
   </component>

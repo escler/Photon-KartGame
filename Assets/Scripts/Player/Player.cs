@@ -23,6 +23,7 @@ public class Player : NetworkBehaviour
 
     private int clockTime;
     public bool readyCheck;
+    [Networked]  public bool CanChangeColor { get; set; }
     private NetworkTransform _nTransform;
 
     [Networked] public int MapZone { get; set; }
@@ -52,6 +53,7 @@ public class Player : NetworkBehaviour
     public event Action OnTurboChange = delegate { };
     public event Action OnLapFinish = delegate { };
 
+    private NetworkTransform _transform;
     [Networked] public float NetworkedTurbo { get; private set; } = 100;
     [Networked] public int NetworkedColor { get; private set; } = 0;
 
@@ -122,7 +124,8 @@ public class Player : NetworkBehaviour
                 }
                 case nameof(ChangeLocation):
                 {
-                    MoveToRace();
+                    _transform.Teleport(new (-12.4f, 0.5f, -7.06f));
+                    //MoveToRace();
                     break;
                 }
             }
@@ -135,7 +138,7 @@ public class Player : NetworkBehaviour
 
         if (networkInputData.checkButton && !GameManager.Local.raceIsStarted) ChangeReady = !ChangeReady;
 
-        if (networkInputData.changeColor)
+        if (networkInputData.changeColor && CanChangeColor)
         {
             ChangeColor = !ChangeColor;
         }
