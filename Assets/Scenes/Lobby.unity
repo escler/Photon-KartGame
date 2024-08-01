@@ -30645,11 +30645,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d85e316d5a2a324ba804aa206c8fa11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _Countdown:
+  _NewRaceBegin:
     _value: 0
   _StartRace:
     _value: 0
-  lapsForWin: 3
+  lapsForWin: 1
   winGo: {fileID: 0}
   loseGo: {fileID: 0}
   countDownGo: {fileID: 0}

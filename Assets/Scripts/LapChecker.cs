@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class LapChecker : NetworkBehaviour
 {
-    [Networked] private bool lapFinish { get; set; }
     public int check, checkNeeded;
     private void OnTriggerEnter(Collider other)
     {
@@ -17,6 +16,7 @@ public class LapChecker : NetworkBehaviour
             player.MapZone = check;
             if (checkNeeded == 3)
             {
+                print("LapTerminada");
                 player.LapFinish = !player.LapFinish;
             }
         }

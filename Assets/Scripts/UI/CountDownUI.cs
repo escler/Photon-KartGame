@@ -60,6 +60,13 @@ public class CountDownUI : NetworkBehaviour
     private void UpdateTimer()
     {
         _tmp.text = timer.ToString();
+        if (timer <= 5)
+        {
+            SoundManager.Instance.ChangeToRaceMusic();  
+            FindObjectOfType<LoadingScreenUI>().HideScreen();
+        }
+        
+        if(timer == 3) SoundManager.Instance.PlayCountDownSound();
     }
     
     private void DisableTimer()
@@ -75,7 +82,7 @@ public class CountDownUI : NetworkBehaviour
     
     IEnumerator Count()
     {
-        while (timer > 0)
+        while (timer > 1)
         {
             timer--;
             RefreshTimer = !RefreshTimer;

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using ExitGames.Client.Photon.StructWrapping;
 using Fusion;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -9,7 +10,7 @@ public class GameManager : NetworkBehaviour
 {
     public static GameManager Local { get; private set; }
     [Networked] private NetworkBool win { get; set; }
-    [Networked] public NetworkBool Countdown { get; set; }
+    [Networked] public NetworkBool NewRaceBegin { get; set; }
     [Networked] public NetworkBool StartRace { get; set; }
     public int lapsForWin;
     public GameObject winGo, loseGo, countDownGo, lapsGo;
@@ -18,8 +19,8 @@ public class GameManager : NetworkBehaviour
     
     private ChangeDetector _changeDetector;
     private NetworkPlayer _winner;
-    private bool _screenShowed;
-    public bool raceIsStarted;
+    [Networked] public NetworkBool ScreenShowed { get; set; }
+    [Networked] public NetworkBool raceIsStarted { get; set; }
 
     public override void Spawned()
     {
@@ -33,10 +34,9 @@ public class GameManager : NetworkBehaviour
         {
             switch (change)
             {
-                case nameof(Countdown):
+                case nameof(NewRaceBegin):
                 {
                     ShowTimeCount();
-                    raceIsStarted = true;
                     break;
                 }
                 case nameof(StartRace):
@@ -54,7 +54,7 @@ public class GameManager : NetworkBehaviour
     {
         foreach (var player in activePlayers)
         {
-            player.GetComponent<Player>().ChangeReady = false;
+            player.GetComponent<Player>().readyCheck = false;
         }
     }
 
@@ -76,7 +76,7 @@ public class GameManager : NetworkBehaviour
         int countReady = 0;
         foreach (var player in activePlayers)
         {
-            if(!player.GetComponent<Player>().readyCheck) break;
+            if(!player.GetComponent<Player>().readyCheck) continue;
             countReady++;
         }
 
@@ -90,6 +90,7 @@ public class GameManager : NetworkBehaviour
                 player.GetComponent<Player>().readyCheck = false;
                 player.GetComponent<Player>().CanMove = player.GetComponent<Player>().CanMove = false;
             }
+            ResetValues();
         }
     }
 
@@ -100,12 +101,13 @@ public class GameManager : NetworkBehaviour
             var p = player.GetComponent<Player>();
             if (p == null) continue;
             p.CanMove = true;
+            p.GetComponent<Rigidbody>().isKinematic = false;
         }
     }
     
     private void ShowScreen(NetworkPlayer player)
     {
-        if (_screenShowed) return;
+        if (ScreenShowed) return;
         lapsGo.GetComponent<LapsCountUI>().FinishRace();
         if (player.HasInputAuthority) Win();
         else Lose();
@@ -114,14 +116,14 @@ public class GameManager : NetworkBehaviour
     {
         if (winGo == null) winGo = FindObjectOfType<WinText>().gameObject;
         winGo.GetComponent<WinText>().ShowScreen();
-        _screenShowed = true;
+        ScreenShowed = true;
     }
 
     private void Lose()
     {
         if (loseGo == null) loseGo = FindObjectOfType<LoseText>().gameObject;
-        loseGo.GetComponent<LoseText>().ShowScreen();;
-        _screenShowed = true;
+        loseGo.GetComponent<LoseText>().ShowScreen();
+        ScreenShowed = true;
     }
 
     private void ShowTimeCount()
@@ -131,6 +133,13 @@ public class GameManager : NetworkBehaviour
         countDownGo.GetComponent<CountDownUI>().StartTime();
     }
 
+    void ResetValues()
+    {
+        raceIsStarted = true;
+        win = false;
+        ScreenShowed = false;
+    }
+    
     void ShowLaps()
     {
         if (lapsGo == null) lapsGo = FindObjectOfType<LapsCountUI>().gameObject;

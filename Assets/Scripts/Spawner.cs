@@ -11,37 +11,7 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
     [SerializeField] private NetworkPrefabRef _playerPrefab;
 
     private NetworkObject playerObj;
-    private Vector3[] positionsRace =
-    {
-        new (-12.4f, 0.5f, -7.06f),
-        new (-6.2f, 0.5f, -7.06f),
-        new (0.4f, 0.5f, -7.06f),
-        new (6.8f, 0.5f, -7.06f),
-        new (13f, 0.5f, -7.06f)
-    };
-    private Vector3[] positionsLobby =
-    {
-        new (-64.9f, 0.5f, -1743.59f),
-        new (-65.8f, 0.5f, -1699.83f),
-        new (-62.8f, 0.5f, -1654.93f),
-        new (-51.5f, 0.5f, -1724.23f),
-        new (-53.3f, 0.5f, -1690.13f)
-    };
 
-    public void SetPosition(int position, string gameName, Player player)
-    {
-        switch (gameName)
-        {
-            case "Lobby":
-                player.gameObject.transform.position = positionsLobby[position];
-                player.transform.rotation = Quaternion.identity;
-                break;
-            case "Race":
-                player.transform.position = positionsRace[position];
-                player.transform.rotation = Quaternion.identity;
-                break;
-        }
-    }
 
     
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
@@ -49,8 +19,8 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
         if (runner.IsServer)
         {
             playerObj = runner.Spawn(_playerPrefab, null, null, player);    
-            playerObj.transform.position = positionsLobby[runner.ActivePlayers.Count() - 1];
             playerObj.GetComponent<Player>().number = runner.ActivePlayers.Count() - 1;
+            playerObj.transform.position = playerObj.GetComponent<Player>().SetPosition("Lobby");
             StartCoroutine(AddPlayer());
         }
     }
@@ -63,7 +33,7 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
     IEnumerator CheckGameManager()
     {
         yield return new WaitForSeconds(.5f);
-        GameManager.Local.Countdown = !GameManager.Local.Countdown;
+        GameManager.Local.NewRaceBegin = !GameManager.Local.NewRaceBegin;
     }
 
     private CharacterInputHandler _characterInputHandler;

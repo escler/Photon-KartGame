@@ -13,10 +13,8 @@ public class RaceStart : NetworkBehaviour
 
     public void SetPosition()
     {
-        foreach (var player in GameManager.Local.activePlayers)
-        {
-            player.GetComponent<Player>().MoveToRace();
-        }
+        var localPlayer = NetworkPlayer.Local.GetComponent<Player>();
+        localPlayer.RPCMovingCircuit();
     }
 
     void FreezeVelocity()
@@ -24,21 +22,24 @@ public class RaceStart : NetworkBehaviour
         foreach (var player in GameManager.Local.activePlayers)
         {
             player.GetComponent<Player>().CanMove = false;
-            player.GetComponent<Rigidbody>().velocity = Vector3.zero;
+            player.GetComponent<Rigidbody>().isKinematic = true;
         }
     }
 
     public void StartRace()
     {
+        SoundManager.Instance.musicSource.Stop();
         StartCoroutine(StartRaceI());
     }
 
     IEnumerator StartRaceI()
     {
+        FindObjectOfType<LoadingScreenUI>().ShowScreen();
+        yield return new WaitForSeconds(1f);
         FreezeVelocity();
         yield return new WaitForSeconds(.3f);
         SetPosition();
         yield return new WaitForSeconds(1f);
-        GameManager.Local.Countdown = !GameManager.Local.Countdown;
+        GameManager.Local.NewRaceBegin = !GameManager.Local.NewRaceBegin;
     }
 }

@@ -38,6 +38,7 @@ public class TurboBox : NetworkBehaviour
             print("PLayer");
             player.AddEnergy = !player.AddEnergy;
             BoxAdquired = !BoxAdquired;
+            SoundManager.Instance.PlayNitroCollectedSound();
         }
     }
 

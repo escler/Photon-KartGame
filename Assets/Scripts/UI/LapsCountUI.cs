@@ -1,6 +1,7 @@
 using Fusion;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class LapsCountUI : NetworkBehaviour
 {
@@ -13,6 +14,11 @@ public class LapsCountUI : NetworkBehaviour
         _player = NetworkPlayer.Local.GetComponent<Player>();
         _player.OnLapFinish += UpdateLaps;
         UpdateLaps();
+    }
+
+    public void OnDestroy()
+    {
+        _player.OnLapFinish -= UpdateLaps;
     }
 
     public void StartRace()

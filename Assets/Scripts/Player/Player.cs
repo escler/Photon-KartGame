@@ -21,8 +21,7 @@ public class Player : NetworkBehaviour
     private float _acceleration;
     private float _appliedSpeed;
 
-    private int clockTime;
-    public bool readyCheck;
+    [Networked] public NetworkBool readyCheck { get; set; }
     [Networked]  public bool CanChangeColor { get; set; }
     private NetworkTransform _nTransform;
 
@@ -46,18 +45,16 @@ public class Player : NetworkBehaviour
     [Networked] NetworkBool Turbo { get; set; }
     [Networked] public NetworkBool LapFinish { get; set; }
     [Networked] NetworkBool ChangeColor { get; set; }
-    [Networked] public NetworkBool ChangeReady { get; set; }
-    [Networked] public NetworkBool ChangeLocation { get; set; }
+    [Networked] private NetworkBool ChangeReady { get; set; }
+    [Networked] public NetworkBool MoveToRace { get; set; }
     [Networked] public NetworkBool AddEnergy { get; set; }
 
     public event Action OnTurboChange = delegate { };
     public event Action OnLapFinish = delegate { };
-
-    private NetworkTransform _transform;
     [Networked] public float NetworkedTurbo { get; private set; } = 100;
     [Networked] public int NetworkedColor { get; private set; } = 0;
 
-    public int lapsCount;
+    [Networked] public int lapsCount { get; set; }
     private bool _changingColor;
 
     public Renderer modelRenderer;
@@ -68,6 +65,8 @@ public class Player : NetworkBehaviour
     
     private ChangeDetector _changeDetector;
     private PlayerView _view;
+    
+    [Networked] NetworkBool ResetParams { get; set; }
 
     private void Awake()
     {
@@ -122,10 +121,15 @@ public class Player : NetworkBehaviour
                     ReadyCheck();
                     break;
                 }
-                case nameof(ChangeLocation):
+                case nameof(MoveToRace):
                 {
-                    _transform.Teleport(new (-12.4f, 0.5f, -7.06f));
-                    //MoveToRace();
+                    //MovingCircuit();
+                    break;
+                }
+                case nameof(ResetParams):
+                {
+                    RefreshEnergy();
+                    ResetLapsCount();
                     break;
                 }
             }
@@ -146,7 +150,6 @@ public class Player : NetworkBehaviour
         {
             _xAxi = 0;
             _yAxi = 0;
-            _rb.velocity = Vector3.zero;
             return;
         }
         _xAxi = networkInputData.verticalInput;
@@ -158,6 +161,7 @@ public class Player : NetworkBehaviour
 
     private void Move()
     {
+        
         _maxSpeed = Turbo ? turboMaxSpeed : maxSpeed;
         _acceleration = Turbo ? turboAcceleration : acceleration;
 
@@ -168,6 +172,11 @@ public class Player : NetworkBehaviour
         var vel = (_rb.rotation * Vector3.forward) * _appliedSpeed;
         vel.y = _rb.velocity.y;
         _rb.velocity = vel;
+
+        if (!HasInputAuthority) return;
+        if(Turbo) SoundManager.Instance.PlayTurboSound();
+        else if(_xAxi != 0 && !Turbo) SoundManager.Instance.PlayCarSound();
+        else SoundManager.Instance.StopCarSound();
     }
 
     private void Rotate()
@@ -212,11 +221,20 @@ public class Player : NetworkBehaviour
         OnTurboChange.Invoke();
     }
 
+    private void ResetLapsCount()
+    {
+        lapsCount = 0;
+        MapZone = 0;
+        OnLapFinish.Invoke();
+        print(lapsCount);
+    }
+
     private void UpdateLapInfo()
     {
-        lapsCount++;
+        if(HasInputAuthority) lapsCount++;
         OnLapFinish.Invoke();
         CheckWin();
+        print(lapsCount);
     }
 
     private void CheckWin()
@@ -239,22 +257,56 @@ public class Player : NetworkBehaviour
     private void ChangeCarColor()
     {
         modelRenderer.material = carColors[NetworkedColor];
+        if (HasInputAuthority) SoundManager.Instance.PlayChangeColorSound();
     }
-
-    public void MoveToRace()
+    
+    private Vector3[] positionsRace =
     {
-        clockTime = 3;
-        StartCoroutine(MoveToPos());
+        new (-12.4f, 0.5f, -7.06f),
+        new (-6.2f, 0.5f, -7.06f),
+        new (0.4f, 0.5f, -7.06f),
+        new (6.8f, 0.5f, -7.06f),
+        new (13f, 0.5f, -7.06f)
+    };
+    private Vector3[] positionsLobby =
+    {
+        new (-64.9f, 0.5f, -1743.59f),
+        new (-65.8f, 0.5f, -1699.83f),
+        new (-62.8f, 0.5f, -1654.93f),
+        new (-51.5f, 0.5f, -1724.23f),
+        new (-53.3f, 0.5f, -1690.13f)
+    };
+
+    [Rpc(RpcSources.All,RpcTargets.All)]
+    public void RPCMovingCircuit()
+    {
+        StartCoroutine(MovePlayer());
+        ResetParams = !ResetParams;
+        //_nTransform.Teleport(SetPosition("Race"),Quaternion.identity);
     }
 
-    IEnumerator MoveToPos()
+    IEnumerator MovePlayer()
     {
         while (!CanMove)
         {
-            FindObjectOfType<Spawner>().SetPosition(number, "Race", this);
+            transform.rotation = Quaternion.identity;
+            transform.position = SetPosition("Race");
             yield return new WaitForSeconds(.1f);
         }
-        yield return null;
+    }
+    
+    
+
+    public Vector3 SetPosition(string gameName)
+    {
+        switch (gameName)
+        {
+            case "Lobby":
+                return positionsLobby[number];
+            case "Race":
+                return positionsRace[number];
+        }
+        return default;
     }
 }
 

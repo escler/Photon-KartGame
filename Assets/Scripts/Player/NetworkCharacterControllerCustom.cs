@@ -44,4 +44,5 @@ public class NetworkCharacterControllerCustom : NetworkCharacterController
         Controller.Move(moveVelocity * deltaTime);*/
 
     }
+    
 }

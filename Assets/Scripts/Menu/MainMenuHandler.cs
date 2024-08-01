@@ -11,11 +11,15 @@ public class MainMenuHandler : MonoBehaviour
     [SerializeField] private GameObject _sessionBrowserPanel;
     [SerializeField] private GameObject _hostGamePanel;
     [SerializeField] private GameObject _statusPanel;
+    [SerializeField] private GameObject _controlsPanel;
 
     [Header("Buttons")]
     [SerializeField] private Button _joinLobbyBTN;
     [SerializeField] private Button _goToHostPanelBTN;
     [SerializeField] private Button _hostBTN;
+    [SerializeField] private Button _controlsBTN;
+    [SerializeField] private Button _exitBTN;
+    [SerializeField] private Button _closeControlsBTN;
     
     [Header("InputFields")]
     [SerializeField] private TMP_InputField _hostSessionName;
@@ -28,6 +32,9 @@ public class MainMenuHandler : MonoBehaviour
         _joinLobbyBTN.onClick.AddListener(Btn_JoinLobby);
         _goToHostPanelBTN.onClick.AddListener(Btn_ShowHostPanel);
         _hostBTN.onClick.AddListener(Btn_CreateGameSession);
+        _controlsBTN.onClick.AddListener(Btn_ShowControls);
+        _exitBTN.onClick.AddListener(() => Application.Quit());
+        _closeControlsBTN.onClick.AddListener(Btn_HideControls);
 
         _networkHandler.OnJoinedLobby += () =>
         {
@@ -38,6 +45,7 @@ public class MainMenuHandler : MonoBehaviour
 
     void Btn_JoinLobby()
     {
+        SoundManager.Instance.PlayClickSound();
         _networkHandler.JoinLobby();
 
         _initialPanel.SetActive(false);
@@ -48,15 +56,28 @@ public class MainMenuHandler : MonoBehaviour
     
     void Btn_ShowHostPanel()
     {
+        SoundManager.Instance.PlayClickSound();
         _sessionBrowserPanel.SetActive(false);
-        
         _hostGamePanel.SetActive(true);
     }
     
     void Btn_CreateGameSession()
     {
+        SoundManager.Instance.PlayClickSound();
         _hostBTN.interactable = false;
         _networkHandler.CreateGame(_hostSessionName.text, "Lobby");
+    }
+
+    void Btn_ShowControls()
+    {
+        SoundManager.Instance.PlayClickSound();
+        _controlsPanel.SetActive(true);
+    }
+
+    void Btn_HideControls()
+    {
+        SoundManager.Instance.PlayClickSound();
+        _controlsPanel.SetActive(false);
     }
     
 }
