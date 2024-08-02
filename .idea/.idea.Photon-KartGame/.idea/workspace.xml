@@ -17,9 +17,11 @@
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Lobby/ChangeColor.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/RaceStart.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/SoundManager.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/UI/CheckReadyUI.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/UI/LoadingScreenUI.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/UI/LoseText.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/UI/WinText.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.ugui@1.0.0/Runtime/EventSystem/EventSystem.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Unity Projects/Fusion Host/Assets/Scripts/Connection/NetworkRunnerHandler.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Unity Projects/Fusion Host/Assets/Scripts/Connection/Spawner.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Unity Projects/Fusion Host/Assets/Scripts/Player/Life/LifeHandler.cs" root0="SKIP_HIGHLIGHTING" />
@@ -56,7 +58,7 @@
 }</component>
   <component name="RunManager" selected="Attach to Unity Editor.Attach to Unity Editor">
     <configuration name="Standalone Player" type="RunUnityExe" factoryName="Unity Executable">
-      <option name="EXE_PATH" value="$USER_HOME$/Desktop/Karti2/Photon-Host-KartGame.exe" />
+      <option name="EXE_PATH" value="$USER_HOME$/Desktop/Autitos/Photon-Host-KartGame.exe" />
       <option name="PROGRAM_PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="C:\Users\Lea\Desktop\Karti2" />
       <option name="PASS_PARENT_ENVS" value="1" />
@@ -111,7 +113,9 @@
       <workItem from="1721685389904" duration="13839000" />
       <workItem from="1722213550863" duration="5308000" />
       <workItem from="1722376761562" duration="5250000" />
-      <workItem from="1722463418888" duration="15555000" />
+      <workItem from="1722463418888" duration="16163000" />
+      <workItem from="1722549260009" duration="2630000" />
+      <workItem from="1722559563668" duration="10625000" />
     </task>
     <servers />
   </component>

@@ -20,6 +20,8 @@ public class MainMenuHandler : MonoBehaviour
     [SerializeField] private Button _controlsBTN;
     [SerializeField] private Button _exitBTN;
     [SerializeField] private Button _closeControlsBTN;
+    [SerializeField] private Button _backFromSessionListBTN;
+    [SerializeField] private Button _backFromHostPanel;
     
     [Header("InputFields")]
     [SerializeField] private TMP_InputField _hostSessionName;
@@ -35,6 +37,8 @@ public class MainMenuHandler : MonoBehaviour
         _controlsBTN.onClick.AddListener(Btn_ShowControls);
         _exitBTN.onClick.AddListener(() => Application.Quit());
         _closeControlsBTN.onClick.AddListener(Btn_HideControls);
+        _backFromSessionListBTN.onClick.AddListener(Btn_BackFromSessionList);
+        _backFromHostPanel.onClick.AddListener(Btn_BackFromHostPanel);
 
         _networkHandler.OnJoinedLobby += () =>
         {
@@ -53,12 +57,27 @@ public class MainMenuHandler : MonoBehaviour
 
         _statusText.text = "Joining Lobby...";
     }
+
+    void Btn_BackFromSessionList()
+    {
+        SoundManager.Instance.PlayClickSound();
+        _sessionBrowserPanel.SetActive(false);
+
+        _initialPanel.SetActive(true);
+    }
     
     void Btn_ShowHostPanel()
     {
         SoundManager.Instance.PlayClickSound();
         _sessionBrowserPanel.SetActive(false);
         _hostGamePanel.SetActive(true);
+    }
+
+    void Btn_BackFromHostPanel()
+    {
+        SoundManager.Instance.PlayClickSound();
+        _sessionBrowserPanel.SetActive(true);
+        _hostGamePanel.SetActive(false);
     }
     
     void Btn_CreateGameSession()

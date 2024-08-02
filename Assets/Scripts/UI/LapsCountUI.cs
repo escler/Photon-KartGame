@@ -16,6 +16,11 @@ public class LapsCountUI : NetworkBehaviour
         UpdateLaps();
     }
 
+    public void HideUI()
+    {
+        _tmp.enabled = false;
+    }
+
     public void OnDestroy()
     {
         _player.OnLapFinish -= UpdateLaps;
@@ -28,7 +33,7 @@ public class LapsCountUI : NetworkBehaviour
 
     public void FinishRace()
     {
-        _tmp.enabled = false;
+        gameObject.SetActive(false);
     }
     private void UpdateLaps()
     {

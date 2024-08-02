@@ -7,5 +7,7 @@ public struct NetworkInputData : INetworkInput
     public bool turboPressed;
     public bool checkButton;
     public bool changeColor;
+    public bool backToLobby;
+    public bool disconectLobby;
 
 }

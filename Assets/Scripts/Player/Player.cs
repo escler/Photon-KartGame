@@ -4,6 +4,7 @@ using UnityEngine;
 using Fusion;
 using System.Linq;
 using UnityEditor;
+using UnityEngine.SceneManagement;
 
 
 public class Player : NetworkBehaviour
@@ -45,16 +46,17 @@ public class Player : NetworkBehaviour
     [Networked] NetworkBool Turbo { get; set; }
     [Networked] public NetworkBool LapFinish { get; set; }
     [Networked] NetworkBool ChangeColor { get; set; }
-    [Networked] private NetworkBool ChangeReady { get; set; }
+    [Networked] public NetworkBool ChangeReady { get; set; }
     [Networked] public NetworkBool MoveToRace { get; set; }
     [Networked] public NetworkBool AddEnergy { get; set; }
 
     public event Action OnTurboChange = delegate { };
     public event Action OnLapFinish = delegate { };
+    public event Action OnReadyCheckChange = delegate { };
     [Networked] public float NetworkedTurbo { get; private set; } = 100;
     [Networked] public int NetworkedColor { get; private set; } = 0;
 
-    [Networked] public int lapsCount { get; set; }
+    public int lapsCount;
     private bool _changingColor;
 
     public Renderer modelRenderer;
@@ -142,6 +144,13 @@ public class Player : NetworkBehaviour
 
         if (networkInputData.checkButton && !GameManager.Local.raceIsStarted) ChangeReady = !ChangeReady;
 
+        if (networkInputData.backToLobby)
+        {
+            GameManager.Local.ReturnToLobby = !GameManager.Local.ReturnToLobby;
+        }
+        
+        if(networkInputData.disconectLobby) DisconnectFromLobby();
+        
         if (networkInputData.changeColor && CanChangeColor)
         {
             ChangeColor = !ChangeColor;
@@ -157,6 +166,24 @@ public class Player : NetworkBehaviour
         Turbo = networkInputData.turboPressed && NetworkedTurbo > 0;
         Move();
         Rotate();
+        
+    }
+
+    private void DisconnectFromLobby()
+    {
+        if (!Object.HasInputAuthority)
+            Runner.Disconnect(Object.InputAuthority);
+        
+        GameManager.Local.activePlayers.Remove(Object);
+        CheckReadyUI.Local.PlayersChange = !CheckReadyUI.Local.PlayersChange;
+        
+        Runner.Despawn(Object);
+    }
+
+    public override void Despawned(NetworkRunner runner, bool hasState)
+    {
+        base.Despawned(runner, hasState);
+        if(HasInputAuthority) SceneManager.LoadScene("Main Menu");
     }
 
     private void Move()
@@ -174,9 +201,10 @@ public class Player : NetworkBehaviour
         _rb.velocity = vel;
 
         if (!HasInputAuthority) return;
-        if(Turbo) SoundManager.Instance.PlayTurboSound();
-        else if(_xAxi != 0 && !Turbo) SoundManager.Instance.PlayCarSound();
-        else SoundManager.Instance.StopCarSound();
+        SoundManager.Instance._isTurboPlaying = Turbo;
+        SoundManager.Instance._carIsPlaying = _xAxi != 0;
+        
+        SoundManager.Instance.PlayCarSound();
     }
 
     private void Rotate()
@@ -224,17 +252,18 @@ public class Player : NetworkBehaviour
     private void ResetLapsCount()
     {
         lapsCount = 0;
-        MapZone = 0;
+        MapZone = 3;
         OnLapFinish.Invoke();
         print(lapsCount);
     }
 
-    private void UpdateLapInfo()
+    public void UpdateLapInfo()
     {
-        if(HasInputAuthority) lapsCount++;
+        lapsCount++;
         OnLapFinish.Invoke();
         CheckWin();
-        print(lapsCount);
+
+        print("Vueltas" + lapsCount);
     }
 
     private void CheckWin()
@@ -246,6 +275,15 @@ public class Player : NetworkBehaviour
     {
         readyCheck = !readyCheck;
         GameManager.Local.CheckReadyState();
+        if (!HasInputAuthority) return;
+        OnReadyCheckChange.Invoke();
+    }
+
+    public void SetReadyCheck(bool state)
+    {
+        readyCheck = state;
+        if (!HasInputAuthority) return;
+        OnReadyCheckChange.Invoke();
     }
 
     private void ChangeColorCount()
@@ -282,7 +320,13 @@ public class Player : NetworkBehaviour
     {
         StartCoroutine(MovePlayer());
         ResetParams = !ResetParams;
-        //_nTransform.Teleport(SetPosition("Race"),Quaternion.identity);
+    }
+    
+    [Rpc(RpcSources.All,RpcTargets.All)]
+    public void RPCMoveToLobby()
+    {
+        StartCoroutine(MovePlayerToLobby());
+        ResetParams = !ResetParams;
     }
 
     IEnumerator MovePlayer()
@@ -291,6 +335,16 @@ public class Player : NetworkBehaviour
         {
             transform.rotation = Quaternion.identity;
             transform.position = SetPosition("Race");
+            yield return new WaitForSeconds(.1f);
+        }
+    }
+    
+    IEnumerator MovePlayerToLobby()
+    {
+        while (!CanMove)
+        {
+            transform.rotation = Quaternion.identity;
+            transform.position = SetPosition("Lobby");
             yield return new WaitForSeconds(.1f);
         }
     }

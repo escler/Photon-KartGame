@@ -9,18 +9,20 @@ using UnityEngine.SceneManagement;
 public class GameManager : NetworkBehaviour
 {
     public static GameManager Local { get; private set; }
-    [Networked] private NetworkBool win { get; set; }
+    [Networked] public NetworkBool win { get; set; }
     [Networked] public NetworkBool NewRaceBegin { get; set; }
     [Networked] public NetworkBool StartRace { get; set; }
     public int lapsForWin;
     public GameObject winGo, loseGo, countDownGo, lapsGo;
 
-    public List<NetworkObject> activePlayers = new List<NetworkObject>();
+    [Networked, Capacity(5)]public NetworkLinkedList<NetworkObject> activePlayers { get; }
     
     private ChangeDetector _changeDetector;
     private NetworkPlayer _winner;
-    [Networked] public NetworkBool ScreenShowed { get; set; }
+    [Networked] public int countReady { get; set; }
+    public bool ScreenShowed { get; set; }
     [Networked] public NetworkBool raceIsStarted { get; set; }
+    [Networked] public NetworkBool ReturnToLobby { get; set; }
 
     public override void Spawned()
     {
@@ -36,6 +38,7 @@ public class GameManager : NetworkBehaviour
             {
                 case nameof(NewRaceBegin):
                 {
+                    ResetValues();
                     ShowTimeCount();
                     break;
                 }
@@ -46,6 +49,9 @@ public class GameManager : NetworkBehaviour
                     UncheckedReadys();
                     break;
                 }
+                case nameof(ReturnToLobby):
+                    ReturnPlayersToLobby();
+                    break;
             }
         }
     }
@@ -54,8 +60,12 @@ public class GameManager : NetworkBehaviour
     {
         foreach (var player in activePlayers)
         {
-            player.GetComponent<Player>().readyCheck = false;
+            player.GetComponent<Player>().SetReadyCheck(false);
         }
+
+        countReady = 0;
+
+        CheckReadyUI.Local.PlayersChange = !CheckReadyUI.Local.PlayersChange;
     }
 
     [Rpc(RpcSources.All,RpcTargets.All)]
@@ -67,20 +77,30 @@ public class GameManager : NetworkBehaviour
         win = true;
         StartRace = !StartRace;
         _winner = player;
+        CheckReadyUI.Local.InRacing = false;
         ShowScreen(_winner);
+    }
+
+    public void ReturnPlayersToLobby()
+    {
+        if (!win) return;
+        if (HasStateAuthority) Runner.UnloadScene(SceneRef.FromIndex(2));
+        StartCoroutine(GoToLobby());
     }
 
     public void CheckReadyState()
     {
         if (!HasStateAuthority) return;
-        int countReady = 0;
+        countReady = 0;
         foreach (var player in activePlayers)
         {
             if(!player.GetComponent<Player>().readyCheck) continue;
             countReady++;
         }
 
-        if (countReady == activePlayers.Count && activePlayers.Count > 0 && !raceIsStarted)
+        CheckReadyUI.Local.PlayersChange = !CheckReadyUI.Local.PlayersChange;
+
+        if (countReady == activePlayers.Count && activePlayers.Count > 1 && !raceIsStarted)
         {
             Runner.UnloadScene(SceneRef.FromIndex(2));
             Runner.LoadScene(SceneRef.FromIndex(2), LoadSceneMode.Additive);
@@ -90,7 +110,6 @@ public class GameManager : NetworkBehaviour
                 player.GetComponent<Player>().readyCheck = false;
                 player.GetComponent<Player>().CanMove = player.GetComponent<Player>().CanMove = false;
             }
-            ResetValues();
         }
     }
 
@@ -108,13 +127,13 @@ public class GameManager : NetworkBehaviour
     private void ShowScreen(NetworkPlayer player)
     {
         if (ScreenShowed) return;
-        lapsGo.GetComponent<LapsCountUI>().FinishRace();
         if (player.HasInputAuthority) Win();
         else Lose();
     }
     private void Win()
     {
         if (winGo == null) winGo = FindObjectOfType<WinText>().gameObject;
+        lapsGo.GetComponent<LapsCountUI>().FinishRace();
         winGo.GetComponent<WinText>().ShowScreen();
         ScreenShowed = true;
     }
@@ -122,12 +141,14 @@ public class GameManager : NetworkBehaviour
     private void Lose()
     {
         if (loseGo == null) loseGo = FindObjectOfType<LoseText>().gameObject;
+        lapsGo.GetComponent<LapsCountUI>().FinishRace();
         loseGo.GetComponent<LoseText>().ShowScreen();
         ScreenShowed = true;
     }
 
     private void ShowTimeCount()
     {
+        CheckReadyUI.Local.InRacing = true;
         if (countDownGo == null) countDownGo = FindObjectOfType<CountDownUI>().gameObject;
         countDownGo.SetActive(true);
         countDownGo.GetComponent<CountDownUI>().StartTime();
@@ -138,6 +159,9 @@ public class GameManager : NetworkBehaviour
         raceIsStarted = true;
         win = false;
         ScreenShowed = false;
+        winGo = FindObjectOfType<WinText>().gameObject;
+        loseGo = FindObjectOfType<LoseText>().gameObject;
+        
     }
     
     void ShowLaps()
@@ -145,4 +169,26 @@ public class GameManager : NetworkBehaviour
         if (lapsGo == null) lapsGo = FindObjectOfType<LapsCountUI>().gameObject;
         lapsGo.GetComponent<LapsCountUI>().StartRace();
     }
+
+    IEnumerator GoToLobby()
+    {
+        FindObjectOfType<LoadingScreenUI>().ShowScreen();
+        yield return new WaitForSeconds(.2f);
+        foreach (var player in activePlayers)
+        {
+            var p = player.GetComponent<Player>();
+            if (p == null) continue;
+            p.CanMove = false;
+            p.GetComponent<Rigidbody>().isKinematic = true;
+            p.RPCMoveToLobby();
+        }
+        SoundManager.Instance.ChangeToLobbyMusic();
+        CheckReadyUI.Local.PlayersChange = !CheckReadyUI.Local.PlayersChange;
+        CheckReadyUI.Local.HideReturnLobby();
+
+        yield return new WaitForSeconds(5f);
+        FindObjectOfType<LoadingScreenUI>().HideScreen();
+        PlayerMoving();
+    }
+
 }

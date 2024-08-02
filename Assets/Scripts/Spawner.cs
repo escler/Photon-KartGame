@@ -24,11 +24,12 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
             StartCoroutine(AddPlayer());
         }
     }
-
+    
     IEnumerator AddPlayer()
     {
         yield return new WaitForSeconds(.5f);
         GameManager.Local.activePlayers.Add(playerObj);
+        CheckReadyUI.Local.PlayersChange = !CheckReadyUI.Local.PlayersChange;
     }
     IEnumerator CheckGameManager()
     {
@@ -55,7 +56,9 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
     
     #region Unused callbacks
 
-    public void OnPlayerLeft(NetworkRunner runner, PlayerRef player) { }
+    public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
+    {
+    }
     public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) { }
     public void OnConnectedToServer(NetworkRunner runner) { }

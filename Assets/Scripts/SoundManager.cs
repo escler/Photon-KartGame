@@ -18,7 +18,8 @@ public class SoundManager : MonoBehaviour
     public AudioClip lobbyMusic;
     public AudioClip raceMusic;
 
-    private bool _carIsPlaying, _isTurboPlaying;
+    public bool _carIsPlaying, _isTurboPlaying;
+    private string _carState;
     public static SoundManager Instance { get; set; }
     
     private void Awake()
@@ -66,19 +67,35 @@ public class SoundManager : MonoBehaviour
 
     public void PlayCarSound()
     {
-        if (_carIsPlaying) return;
-        carSound.clip = carLoopSound;
-        carSound.Play();
-        _carIsPlaying = true;
+        if (_isTurboPlaying && _carState != "Turbo")
+        {
+            _carState = "Turbo";
+            carSound.Stop();
+            carSound.clip = nitroLoopSound;
+            carSound.Play();
+        }
+        else if (_carIsPlaying && !_isTurboPlaying && _carState != "Accelerate")
+        {
+            _carState = "Accelerate";
+            carSound.Stop();
+            carSound.clip = carLoopSound;
+            carSound.Play();
+        }
+        else if (!_carIsPlaying && !_isTurboPlaying)
+        {
+            carSound.Stop();
+            _carState = "";
+        }
     }
 
     public void PlayTurboSound()
     {
         if (_isTurboPlaying) return;
+        carSound.Stop();
         carSound.clip = nitroLoopSound;
         carSound.Play();
         _isTurboPlaying = true;
-        _carIsPlaying = false;
+        _carIsPlaying = true;
     }
 
     public void StopCarSound()
