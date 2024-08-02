@@ -26,6 +26,8 @@ public class Player : NetworkBehaviour
     [Networked]  public bool CanChangeColor { get; set; }
     private NetworkTransform _nTransform;
 
+     private bool counting { get; set; }
+
     [Networked] public int MapZone { get; set; }
     
     private Rigidbody _rb;
@@ -252,16 +254,20 @@ public class Player : NetworkBehaviour
     private void ResetLapsCount()
     {
         lapsCount = 0;
-        MapZone = 3;
+        MapZone = 0;
         OnLapFinish.Invoke();
         print(lapsCount);
     }
 
     public void UpdateLapInfo()
     {
-        lapsCount++;
-        OnLapFinish.Invoke();
-        CheckWin();
+        if (!counting)
+        {
+            counting = true;
+            lapsCount++;
+            OnLapFinish.Invoke();
+            CheckWin();
+        }
 
         print("Vueltas" + lapsCount);
     }
@@ -269,6 +275,13 @@ public class Player : NetworkBehaviour
     private void CheckWin()
     {
         GameManager.Local.RPCWinChecker(lapsCount, GetComponent<NetworkPlayer>());
+        StartCoroutine(CountingReset());
+    }
+
+    IEnumerator CountingReset()
+    {
+        yield return new WaitForSeconds(5f);
+        counting = false;
     }
 
     private void ReadyCheck()

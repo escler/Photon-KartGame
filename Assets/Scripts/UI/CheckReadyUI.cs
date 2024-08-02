@@ -67,6 +67,10 @@ public class CheckReadyUI : NetworkBehaviour
     {
         uiLobby.SetActive(false);
     }
+    public void HideExit()
+    {
+        uiText.SetActive(false);
+    }
 
     IEnumerator GetLocalPlayer()
     {

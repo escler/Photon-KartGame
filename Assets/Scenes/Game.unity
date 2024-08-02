@@ -65217,7 +65217,6 @@ GameObject:
   - component: {fileID: 1714583595}
   - component: {fileID: 1714583596}
   - component: {fileID: 1714583597}
-  - component: {fileID: 1714583598}
   m_Layer: 0
   m_Name: Trigger
   m_TagString: Untagged
@@ -65275,24 +65274,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   check: 1
   checkNeeded: 0
---- !u!114 &1714583598
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1714583594}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  SortKey: 2354186177
-  ObjectInterest: 1
-  Flags: 262145
-  NestedObjects: []
-  NetworkedBehaviours:
-  - {fileID: 1714583597}
 --- !u!1 &1714973550
 GameObject:
   m_ObjectHideFlags: 0
@@ -66159,7 +66140,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1736886661}
   - component: {fileID: 1736886659}
-  - component: {fileID: 1736886662}
   - component: {fileID: 1736886663}
   m_Layer: 0
   m_Name: Trigger
@@ -66204,24 +66184,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1213538255}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1736886662
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1736886658}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  SortKey: 2418809255
-  ObjectInterest: 1
-  Flags: 262145
-  NestedObjects: []
-  NetworkedBehaviours:
-  - {fileID: 1736886663}
 --- !u!114 &1736886663
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -74592,7 +74554,6 @@ GameObject:
   - component: {fileID: 1948421572}
   - component: {fileID: 1948421570}
   - component: {fileID: 1948421573}
-  - component: {fileID: 1948421574}
   m_Layer: 0
   m_Name: Trigger
   m_TagString: Untagged
@@ -74650,24 +74611,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   check: 2
   checkNeeded: 1
---- !u!114 &1948421574
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1948421569}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  SortKey: 3342548124
-  ObjectInterest: 1
-  Flags: 262145
-  NestedObjects: []
-  NetworkedBehaviours:
-  - {fileID: 1948421573}
 --- !u!1 &1955711413
 GameObject:
   m_ObjectHideFlags: 0
@@ -82762,7 +82705,6 @@ GameObject:
   - component: {fileID: 6693196070241210844}
   - component: {fileID: 7502250559188177880}
   - component: {fileID: 7502250559188177882}
-  - component: {fileID: 7502250559188177881}
   m_Layer: 7
   m_Name: Finish
   m_TagString: Untagged
@@ -83569,24 +83511,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 182.76465, y: 1741.4657, z: 3995.1753}
   m_Center: {x: 0.0009765625, y: 0, z: -0.0009765625}
---- !u!114 &7502250559188177881
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5264599033130158724}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  SortKey: 424665928
-  ObjectInterest: 1
-  Flags: 262145
-  NestedObjects: []
-  NetworkedBehaviours:
-  - {fileID: 7502250559188177882}
 --- !u!114 &7502250559188177882
 MonoBehaviour:
   m_ObjectHideFlags: 0

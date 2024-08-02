@@ -161,7 +161,8 @@ public class GameManager : NetworkBehaviour
         ScreenShowed = false;
         winGo = FindObjectOfType<WinText>().gameObject;
         loseGo = FindObjectOfType<LoseText>().gameObject;
-        
+        CheckReadyUI.Local.HideReturnLobby();
+        CheckReadyUI.Local.HideExit();
     }
     
     void ShowLaps()

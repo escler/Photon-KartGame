@@ -2,28 +2,26 @@ using System.Collections;
 using Fusion;
 using UnityEngine;
 
-public class LapChecker : NetworkBehaviour
+public class LapChecker : MonoBehaviour
 {
     public int check, checkNeeded;
     private bool stop;
     private void OnTriggerEnter(Collider other)
     {
-        if (other.TryGetComponent(out Player player) && !stop)
+        if (other.TryGetComponent(out Player player))
         {
             if (player.MapZone != checkNeeded)
             {
                 return;
             }
 
-            player.MapZone = check;
             if (checkNeeded == 3 && !stop)
             {
-                stop = true;
                 StartCoroutine(Refresh());
                 print("LapTerminada");
                 player.UpdateLapInfo();
-                player.MapZone = 0;
             }
+            player.MapZone = check;
         }
     }
 
